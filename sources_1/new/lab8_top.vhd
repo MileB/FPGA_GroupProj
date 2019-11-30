@@ -67,6 +67,7 @@ architecture rtl of lab8_top is
     signal playback_clear : std_logic;
     signal playback_pulse : std_logic;
     signal playback_en : std_logic;
+    signal cycle_count : unsigned(1 downto 0);
     
     -- usb to bram signals
     signal new_music_data : std_logic;
@@ -176,15 +177,17 @@ begin
             playback_count <= (others => '0');
             playback_en <= '0';
         elsif (rising_edge(CLK100MHZ)) then
-            if (playback_clear = '1') then
-                playback_count <= (others => '0');
-                playback_en <= playback_en;
-            elsif (BTNC_db = '1') then
-                playback_count <= playback_count;
-                playback_en <= '1';
-            elsif (playback_en = '1') then
-                playback_count <= playback_count + 1;
-                playback_en <= '1';
+            if(cycle_count /= 0) then
+                if (playback_clear = '1') then
+                    playback_count <= (others => '0');
+                    playback_en <= playback_en;
+                elsif (BTNC_db = '1') then
+                    playback_count <= playback_count;
+                    playback_en <= '1';
+                elsif (playback_en = '1') then
+                    playback_count <= playback_count + 1;
+                    playback_en <= '1';
+                end if;
             end if;
         end if;
     end process;
@@ -203,7 +206,11 @@ begin
     begin
         if (reset = '1') then
             bram_read_addr <= (others => '0');
+            cycle_count <= (others => '0');
         elsif (rising_edge(CLK100MHZ)) then
+            if(BTNC_db = '1') then
+                cycle_count <= unsigned(SW(1 downto 0));
+            end if;
             if (bram_reader_clear = '1') then
                 bram_read_addr <= (others => '0');
             elsif (playback_pulse = '1') then
