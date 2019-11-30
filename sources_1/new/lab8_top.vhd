@@ -213,6 +213,7 @@ begin
             end if;
             if (bram_reader_clear = '1') then
                 bram_read_addr <= (others => '0');
+                cycle_count <= cycle_count - 1;
             elsif (playback_pulse = '1') then
                 bram_read_addr <= bram_read_addr + 1;
             end if;
